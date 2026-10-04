@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>技能库 · 状态补给 — 阿布</title>
+<meta name="description" content="个人技能变现库 + 状态补给站。知道我会什么、能卖多少钱，以及闲着的时候该干什么。">
+<meta name="theme-color" content="#ff4d17">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="技能库">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png">
+<style>
+:root{
+  --b1:#ff8f2e; --b2:#ff4d17; --b3:#f01e2b;
+  --grad:linear-gradient(135deg,var(--b1) 0%,var(--b2) 52%,var(--b3) 100%);
+  --ink:#1a1512; --ink2:#5d534c; --ink3:#968b83;
+  --bg:#fdfaf8; --card:#fff; --line:#ece4de; --line2:#ddd3ca;
+  --hard:3px 3px 0 rgba(26,21,18,.09);
+  --hard2:5px 5px 0 rgba(26,21,18,.10);
+  --r:14px;
+  --t1:1|2|3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* 窄屏防溢出：长英文/价格串允许断行，网格子项允许收缩 */
+h1,h2,h3,h4,p,li,span,div,b,em,strong{overflow-wrap:anywhere;word-break:break-word}
+.grid>*,.pool>*,.learn>*,.ladder>*{min-width:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",Arial,sans-serif;
+  line-height:1.6; font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:110px;   /* 给底部浮动数据条留位置，避免永久遮挡页脚 */
+  overflow-x:hidden;      /* 硬防横向溢出 */
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ---------- top ---------- */
+.top{position:relative;overflow:hidden;background:var(--card);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:34px 24px 30px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between}
+.brand{display:flex;flex-direction:column;gap:8px}
+.kicker{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--b2);text-transform:uppercase}
+.kicker i{width:7px;height:7px;border-radius:2px;background:var(--grad);display:block}
+h1{font-size:clamp(26px,4.6vw,38px);font-weight:800;letter-spacing:-.025em;line-height:1.15}
+h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill:transparent}
+.sub{font-size:13.5px;color:var(--ink3);max-width:520px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;max-width:100%}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 14px;min-width:96px;min-width:0}
+.stat b{display:block;font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.stat span{font-size:10.5px;color:var(--ink3);letter-spacing:.05em}
+.stat.hi b{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill:transparent}
+
+/* ---------- tabs ---------- */
+.tabbar{position:sticky;top:0;z-index:60;background:rgba(253,250,248,.86);backdrop-filter:blur(14px) saturate(1.6);border-bottom:1px solid var(--line)}
+.tabs{max-width:1180px;margin:0 auto;padding:10px 24px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;border:1px solid transparent;background:transparent;color:var(--ink2);
+  font:inherit;font-size:13.5px;font-weight:600;padding:8px 15px;border-radius:999px;cursor:pointer;transition:.16s}
+.tab:hover{background:#fff;border-color:var(--line);color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:2px 2px 0 var(--b2)}
+.panel{display:none;padding-top:28px}
+.panel.on{display:block;animation:fade .28s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* ---------- section head ---------- */
+.sh{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.sh h2{font-size:19px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.sh h2::before{content:"";width:4px;height:18px;border-radius:2px;background:var(--grad)}
+.sh p{font-size:12.5px;color:var(--ink3);margin-top:3px}
+.sh .r{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- controls ---------- */
+.btn{font:inherit;font-size:13px;font-weight:650;border:1px solid var(--line2);background:#fff;color:var(--ink);
+  padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--ink);transform:translateY(-1px);box-shadow:2px 2px 0 var(--line2)}
+.btn.p{background:var(--grad);border-color:transparent;color:#fff;box-shadow:2px 2px 0 rgba(240,30,43,.28)}
+.btn.p:hover{box-shadow:3px 3px 0 rgba(240,30,43,.32)}
+.btn.d{border-color:var(--line2);color:var(--ink3);padding:6px 11px;font-size:12px}
+.btn.d:hover{color:var(--b3);border-color:var(--b3)}
+select,input,textarea{font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line2);border-radius:8px;padding:7px 10px;width:100%}
+textarea{resize:vertical;line-height:1.55;font-size:13px}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--b2);outline-offset:-1px;border-color:transparent}
+.lbl{font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.06em;display:block;margin-bottom:5px}
+.search{position:relative}
+.search input{padding-left:31px}
+.search::before{content:"⌕";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px}
+
+/* chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12.5px;font-weight:620;padding:6px 12px;border-radius:999px;border:1px solid var(--line2);
+  background:#fff;color:var(--ink2);cursor:pointer;transition:.14s}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.sm{font-size:11.5px;padding:4px 10px}
+
+/* ---------- skill grid ---------- */
+/* minmax 用 min(330px,100%)：窄屏时自动退化为单列，不会撑破视口 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;position:relative;
+  transition:.2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:var(--hard2);border-color:var(--line2)}
+.card::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;background:var(--tc,var(--b2))}
+.ch{display:flex;align-items:flex-start;gap:10px;margin-bottom:11px}
+.ct{flex:1;min-width:0}
+.ct h3{font-size:16px;font-weight:750;letter-spacing:-.015em;line-height:1.3}
+.meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:10.5px;font-weight:650;padding:2.5px 7px;border-radius:5px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink3);letter-spacing:.02em}
+.tag.t1{background:#fff2ec;border-color:#ffd9c9;color:#c43c08}
+.tag.t2{background:#eef3ff;border-color:#d3e0ff;color:#2b52a8}
+.tag.t3{background:#f1ecff;border-color:#ded0ff;color:#5b32b8}
+.tag.ok{background:#eafaf0;border-color:#c3ecd4;color:#0a7a44}
+.stars{display:flex;gap:3px;align-items:center;flex-shrink:0}
+.stars i{width:7px;height:7px;border-radius:2px;background:var(--line2);display:block}
+.stars i.f{background:var(--grad)}
+.blk{margin-top:11px}
+.blk h4{font-size:10.5px;font-weight:750;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.blk h4::after{content:"";flex:1;height:1px;background:var(--line)}
+ul.u{list-style:none;display:flex;flex-direction:column;gap:4px}
+ul.u li{font-size:13px;color:var(--ink2);padding-left:14px;position:relative;line-height:1.5}
+ul.u li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:2px;background:var(--tc,var(--b2))}
+.money{display:flex;flex-direction:column;gap:5px}
+.mrow{display:flex;align-items:baseline;gap:9px;background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:6px 10px}
+.mrow .m{flex:1;font-size:12.5px;color:var(--ink);font-weight:600;line-height:1.4}
+.mrow .p{flex-shrink:0;font-size:12px;font-weight:750;color:var(--b2);font-variant-numeric:tabular-nums}
+.inc{font-size:15px;font-weight:800;letter-spacing:-.02em;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill:transparent;margin-top:3px}
+.nextbox{background:#fffaf3;border:1px dashed #f0c9a8;border-radius:9px;padding:9px 11px;font-size:12.5px;color:#8a5a24;line-height:1.5;margin-top:auto}
+.nextbox b{color:#c43c08}
+.foot{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+/* ---------- earn chart ---------- */
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding:12px 4px 0;border-bottom:1px solid var(--line2)}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bars .b span{font-size:10.5px;color:var(--ink2);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.bars .bar{width:100%;max-width:44px;background:var(--grad);border-radius:6px 6px 0 0;min-height:4px;transition:.4s}
+.bars .b.zero .bar{background:var(--line2)}
+.xlab{display:flex;gap:10px;padding:7px 4px 0}
+.xlab span{flex:1;text-align:center;font-size:11px;color:var(--ink3)}
+
+/* ---------- ladder ---------- */
+.ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(258px,100%),1fr));gap:16px}
+.rung{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.rung::after{content:attr(data-n);position:absolute;right:12px;top:-6px;font-size:66px;font-weight:800;
+  color:var(--rc,rgba(255,77,23,.09));letter-spacing:-.05em;line-height:1}
+.rung h3{font-size:15.5px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:1}
+.rung .sub{font-size:12px;color:var(--ink3);margin:3px 0 11px;position:relative;z-index:1}
+.rung .ceil{font-size:12px;font-weight:700;color:var(--rc);margin-bottom:10px;position:relative;z-index:1}
+.rung ul.u li{font-size:12.5px}
+.rung .amt{margin-top:auto;padding-top:11px;font-size:13px;font-weight:750;border-top:1px solid var(--line)}
+
+/* ---------- calc ---------- */
+.calc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:16px}
+.calc-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:13px;align-items:end}
+.out{margin-top:16px;padding:16px 18px;border-radius:12px;background:var(--grad);color:#fff;
+  display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between;box-shadow:var(--hard)}
+.out .big{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.out .big small{font-size:13px;font-weight:650;opacity:.85;display:block;letter-spacing:0;margin-top:2px}
+.out .det{font-size:12.5px;line-height:1.65;opacity:.94}
+
+/* ---------- supply / fuel ---------- */
+.supply{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.supply{grid-template-columns:1fr}}
+.picker{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.picker h3{font-size:15px;font-weight:800;margin-bottom:3px}
+.picker .hint{font-size:12.5px;color:var(--ink3);margin-bottom:15px}
+.frow{margin-bottom:13px}
+.roll{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;
+  display:flex;flex-direction:column;min-height:330px}
+.roll-idle{justify-content:center;align-items:center;text-align:center;color:var(--ink3);gap:10px}
+.roll-idle .big{font-size:44px;opacity:.28;line-height:1}
+.spin{animation:pop .45s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.act{border:1px solid var(--line);border-radius:11px;padding:14px;background:var(--bg);border-left:3px solid var(--ac,var(--b2))}
+.act h4{font-size:15.5px;font-weight:750;letter-spacing:-.015em;margin-bottom:5px}
+.act .why{font-size:12.5px;color:var(--ink2);line-height:1.55}
+.act .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.earn{border-top:1px solid var(--line);margin-top:11px;padding-top:9px;font-size:12px;color:#0a7a44;display:flex;gap:7px;align-items:flex-start}
+.earn::before{content:"↗";font-weight:800;color:#0a7a44;font-size:13px;line-height:1.3}
+.alts{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line2)}
+.alts p{font-size:10.5px;font-weight:750;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:7px}
+.alts div{display:flex;gap:6px;flex-wrap:wrap}
+.alts span{font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 10px;color:var(--ink2)}
+
+/* activity pool */
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(238px,100%),1fr));gap:10px}
+.ai{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 13px;
+  border-top:2.5px solid var(--ac);transition:.16s;cursor:pointer;position:relative}
+.ai:hover{transform:translateY(-2px);box-shadow:var(--hard);border-color:var(--line2)}
+.ai.done{opacity:.42}
+.ai .n{font-size:13.5px;font-weight:680;line-height:1.35;margin-bottom:5px}
+.ai .m{display:flex;gap:4px;flex-wrap:wrap}
+.ai .m i{font-style:normal;font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg);
+  border:1px solid var(--line);color:var(--ink3)}
+.ai .ck{position:absolute;right:8px;top:8px;font-size:13px;color:#0a7a44;opacity:0;transition:.16s}
+.ai.done .ck{opacity:1}
+.mood-btns{display:flex;gap:6px;flex-wrap:wrap}
+
+/* streak */
+.streak{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.day{width:22px;height:22px;border-radius:6px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:9.5px;color:var(--ink3)}
+.day.on{background:var(--grad);border-color:transparent;color:#fff;font-weight:700}
+.day.today{box-shadow:0 0 0 2px var(--b2)}
+
+/* ---------- learn ---------- */
+.learn{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(310px,100%),1fr));gap:16px}
+.lc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:19px;display:flex;flex-direction:column}
+.lc .top{display:flex;gap:10px;align-items:flex-start}
+.lc .icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:19px;
+  background:var(--bg);border:1px solid var(--line);flex-shrink:0}
+.lc h3{font-size:16px;font-weight:750;letter-spacing:-.015em}
+.lc .who{font-size:11.5px;color:var(--ink3)}
+.bar{height:9px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin:14px 0 7px}
+.bar i{display:block;height:100%;background:var(--grad);border-radius:99px;transition:.35s}
+.pct{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.why{margin-top:13px;background:#f4f9f6;border:1px solid #d3eade;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#0b5c39;line-height:1.55}
+.why b{color:#084d2f}
+.lc .foot{margin-top:auto}
+
+/* ---------- modal ---------- */
+.mask{position:fixed;inset:0;background:rgba(26,21,18,.45);backdrop-filter:blur(3px);z-index:200;
+  display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.mask.on{display:flex}
+.modal{background:var(--card);border-radius:16px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(26,21,18,.3);overflow:hidden}
+.modal .mh{padding:17px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.modal .mh h3{font-size:16px;font-weight:800;flex:1}
+.modal .mb{padding:20px 22px;display:flex;flex-direction:column;gap:13px}
+.modal .mf{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end;background:var(--bg)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+.x{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:16px;color:var(--ink3);flex-shrink:0}
+.x:hover{border-color:var(--b3);color:var(--b3)}
+
+/* ---------- notes ---------- */
+.note{background:#fffaf3;border:1px solid #f2ddc4;border-radius:var(--r);padding:16px 18px;margin-top:22px;font-size:12.5px;color:#7a5320;line-height:1.65}
+.note b{color:#c43c08}
+.note code{background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #f2ddc4;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+.empty{padding:44px 20px;text-align:center;color:var(--ink3);font-size:14px;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r)}
+footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.7}
+footer a{color:var(--b2);text-decoration:none}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:#fff;
+  font-size:13px;font-weight:620;padding:11px 20px;border-radius:11px;box-shadow:0 8px 26px rgba(26,21,18,.3);
+  opacity:0;pointer-events:none;transition:.26s;z-index:300;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:600px){
+  .wrap,.top-in,.tabs{max-width:100%}
+  .top-in{padding:24px 18px}
+  .wrap{padding:0 18px}
+  .tabs{padding:8px 18px}
+  /* 窄屏：搜索框占满一行，筛选芯片独占一行，避免挤成一条缝 */
+  .sh .r{width:100%;margin-left:0}
+  .sh .r .search{width:100%!important}
+  .sh .r .chips{flex-wrap:wrap}
+  .stats{gap:7px;width:100%;display:grid;grid-template-columns:repeat(3,1fr)}
+  .stat{min-width:0;flex:1;padding:8px 10px}
+  .stat b{font-size:17px}
+  .stat span{font-size:9.5px;line-height:1.3;display:block}
+  .mrow{flex-direction:column;align-items:flex-start;gap:2px}
+  .mrow .p{font-size:11.5px}
+  .calc-row{grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr))}
+  .out{gap:14px;padding:14px}
+  .out .big{font-size:25px}
+  .picker,.roll{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="kicker"><i></i>Noah's Vault · 个人系统</span>
+      <h1>我会什么，<em>能卖多少钱</em>；<br>闲着的时候，<em>该干什么</em></h1>
+      <p class="sub">左边是技能变现库——每项技能挂上用法、市场价、收益预估和下一步动作。右边是状态补给站——不知道干嘛的时候，按精力和场景抽一个动作，别再刷手机到凌晨。</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<nav class="tabbar">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-p="p1">技能库</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p2">变现地图</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p3">状态补给</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p4">学习队列</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p5">收益追踪</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ========== 1. 技能库 ========== -->
+  <section class="panel on" id="p1">
+    <div class="sh">
+      <div>
+        <h2>技能库</h2>
+        <p>点卡片右下角「编辑」可以改价格、收益、下一步——数据存在你本地浏览器里，不会传走。</p>
+      </div>
+      <div class="r">
+        <div class="search" style="width:190px"><input id="q" placeholder="搜技能 / 用途…" aria-label="搜索"></div>
+        <div class="chips" id="catF"></div>
+        <button class="btn p" id="addSk">+ 加技能</button>
+      </div>
+    </div>
+    <div class="grid" id="skGrid"></div>
+    <div class="note">
+      <b>为什么这么排？</b>　高单价技能（内训 ¥1.8–3.5w/天、单文件前端 ¥0.8–2w/单）负责拉收入，高复用技能（提示词库、素材模板）负责睡觉时赚钱，而「AI 视频生成」是唯一能把两者串起来的核心资产——它同时是交付物、是作品集、也是引流话题。学习队列里那两门没看完的课，卡的是这条链的剪辑和产能两端。
+    </div>
+  </section>
+
+  <!-- ========== 2. 变现地图 ========== -->
+  <section class="panel" id="p2">
+    <div class="sh">
+      <div>
+        <h2>变现地图</h2>
+        <p>三档生意，风险和天花板完全不同。别一上来就想做最高那档。</p>
+      </div>
+    </div>
+
+    <div class="ladder">
+      <div class="rung" data-n="1" style="--rc:#0a7a44">
+        <h3>卖时间 · 接单代做</h3>
+        <div class="sub">最快见到钱，1–2 周</div>
+        <div class="ceil">天花板 = 你的时薪 × 可用小时</div>
+        <ul class="u">
+          <li>短视频包月代运营 ¥800–4000/月/客户</li>
+          <li>AI 绘画主图 ¥100–500/张，批量 80 起</li>
+          <li>单条 AI 短片 ¥200–500/条（海外 $150–400 入门）</li>
+          <li>角色 LoRA 定制 ¥800–2000/个</li>
+        </ul>
+        <div class="amt">稳态月入 <b>¥0.8–2w</b>（3–4 个客户）</div>
+      </div>
+      <div class="rung" data-n="2" style="--rc:#2b52a8">
+        <h3>卖产品 · 一次做多次卖</h3>
+        <div class="sub">需要流量，1–3 个月</div>
+        <div class="ceil">边际成本近零，但先要有人知道</div>
+        <ul class="u">
+          <li>提示词库 / 工作流模板 ¥49–199/份</li>
+          <li>录播课 ¥199–599，训练营 ¥1999–4999/人</li>
+          <li>OC 设定集 / 素材包，平台自动发货</li>
+          <li>行业情报周报（订阅制）</li>
+        </ul>
+        <div class="amt">跑到量后 <b>¥0.5–1.5w/月</b>被动</div>
+      </div>
+      <div class="rung" data-n="3" style="--rc:#5b32b8">
+        <h3>卖认知 · 内训与咨询</h3>
+        <div class="sub">最慢最累，天花板最高</div>
+        <div class="ceil">需要有 3 个能公开的案例背书</div>
+        <ul class="u">
+          <li>企业 AI 内训 1 天 ¥1.8–3.5w/天</li>
+          <li>管理者 AI 战略 1 天 ¥2.0–4.0w/天</li>
+          <li>模型评测 / 数据规范咨询 ¥3000–8000/轮</li>
+          <li>AI 团队搭建 + SOP 陪跑 ¥2–5w/项目</li>
+        </ul>
+        <div class="amt">单场 <b>¥1.8–4w</b>，一年 6 场即可顶一年接单</div>
+      </div>
+    </div>
+
+    <div class="calc">
+      <h3 style="font-size:15px;font-weight:800">接单收入计算器</h3>
+      <p style="font-size:12.5px;color:var(--ink3);margin:3px 0 15px">填三个数，看你离目标还差几个客户。工具成本按每月 ¥300 估（几个订阅加起来）。</p>
+      <div class="calc-row">
+        <div><label class="lbl" for="c1">客单价（元 / 单）</label><input id="c1" type="number" value="300" min="0"></div>
+        <div><label class="lbl" for="c2">每单耗时（小时）</label><input id="c2" type="number" value="2" min="0" step="0.5"></div>
+        <div><label class="lbl" for="c3">每月可投入（小时）</label><input id="c3" type="number" value="40" min="0"></div>
+        <div><label class="lbl" for="c4">目标月收入（元）</label><input id="c4" type="number" value="15000" min="0"></div>
+        <div><label class="lbl" for="c5">每月工具成本（元）</label><input id="c5" type="number" value="300" min="0"></div>
+      </div>
+      <div class="out" id="cOut"></div>
+    </div>
+  </section>
+
+  <!-- ========== 3. 状态补给 ========== -->
+  <section class="panel" id="p3">
+    <div class="sh">
+      <div>
+        <h2>状态补给</h2>
+        <p>「不知道干什么的时候干什么」——先选现在的状态，然后抽一个动作。</p>
+      </div>
+      <div class="r">
+        <span style="font-size:12.5px;color:var(--ink3)">连续打卡 <b id="stk" style="color:var(--b2);font-size:16px">0</b> 天</span>
+      </div>
+    </div>
+
+    <div class="supply">
+      <div>
+        <div class="picker">
+          <h3>我现在是什么状态</h3>
+          <div class="hint">选两个就够了，选完直接点抽。</div>
+          <div class="frow">
+            <span class="lbl">精力</span>
+            <div class="chips" id="fEnergy">
+              <button class="chip" aria-pressed="true" data-v="">都行</button>
+              <button class="chip" aria-pressed="false" data-v="低">没精神</button>
+              <button class="chip" aria-pressed="false" data-v="中">一般</button>
+              <button class="chip" aria-pressed="false" data-v="高">有劲</button>
+            </div>
+          </div>
+          <div class="frow">
+            <span class="lbl">场景</span>
+            <div class="chips" id="fScene">
+              <button class="chip" aria-pressed="true" data-v="">都行</button>
+              <button class="chip" aria-pressed="false" data-v="公司">在公司</button>
+              <button class="chip" aria-pressed="false" data-v="家">在家</button>
+              <button class="chip" aria-pressed="false" data-v="外出">出门</button>
+            </div>
+          </div>
+          <div class="frow" style="margin-bottom:0">
+            <span class="lbl">想干的事</span>
+            <div class="chips" id="fCat">
+              <button class="chip" aria-pressed="true" data-v="">都行</button>
+              <button class="chip" aria-pressed="false" data-v="学习">学习</button>
+              <button class="chip" aria-pressed="false" data-v="信息">信息</button>
+              <button class="chip" aria-pressed="false" data-v="创作">创作</button>
+              <button class="chip" aria-pressed="false" data-v="运动">运动</button>
+              <button class="chip" aria-pressed="false" data-v="休息">休息</button>
+              <button class="chip" aria-pressed="false" data-v="社交">社交</button>
+              <button class="chip" aria-pressed="false" data-v="整理">整理</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:17px">
+            <button class="btn p" id="roll" style="flex:1">帮我挑一个</button>
+            <button class="btn" id="ckDone">完成打卡</button>
+          </div>
+        </div>
+        <div class="roll" id="rollBox">
+          <div class="roll-idle" id="rollIdle">
+            <div class="big">?</div>
+            <div style="font-size:13.5px;font-weight:650">选好状态，点一下</div>
+            <div style="font-size:12.5px">抽到什么就去做 15 分钟，不用做完</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sh" style="margin-bottom:12px">
+          <div><h2 style="font-size:16px">动作池</h2><p style="font-size:12px">按当前筛选显示 · 点一下就打卡</p></div>
+        </div>
+        <div class="pool" id="pool"></div>
+        <div style="margin-top:14px">
+          <span class="lbl">最近 14 天</span>
+          <div class="streak" id="streak"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4. 学习队列 ========== -->
+  <section class="panel" id="p4">
+    <div class="sh">
+      <div>
+        <h2>学习队列</h2>
+        <p>这两门课是卡住变现链的两端——一门是成片质量，一门是产能。进度自己拖。</p>
+      </div>
+      <div class="r"><button class="btn" id="addLearn">+ 加一门</button></div>
+    </div>
+    <div class="learn" id="learnGrid"></div>
+    <div class="note">
+      <b>关于「没时间看课」。</b>　真没时间就别排进日程，排进「状态补给 → 学习」这个抽签池。理由：这两门课是唯一能同时提升单价和缩短工时的投入，看 20 分钟比你刷 20 分钟 AI 资讯的复利高得多。
+    </div>
+  </section>
+
+  <!-- ========== 5. 收益追踪 ========== -->
+  <section class="panel" id="p5">
+    <div class="sh">
+      <div>
+        <h2>收益追踪</h2>
+        <p>技能库里的收益是估算，这里是你真实收到的钱。写下来才知道哪条路真跑得通。</p>
+      </div>
+      <div class="r"><button class="btn p" id="addInc">+ 记一笔</button></div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))">
+      <div class="card" style="grid-column:1/-1">
+        <div class="ch">
+          <div class="ct"><h3>近 6 个月</h3><div class="meta"><span class="tag" id="incSum">合计 ¥0</span><span class="tag">副业收入</span></div></div>
+        </div>
+        <div class="bars" id="bars"></div>
+        <div class="xlab" id="xlab"></div>
+      </div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr));margin-top:16px" id="incList"></div>
+  </section>
+
+  <footer>
+    <b>定价参考来源（2026 年公开行情）：</b>
+    企业内训取自「AIGC 内容创作实战 2 天 ¥2.5–3.5 万/天」「管理者 AI 思维 1 天 ¥2.0–4.0 万/天」「线上认证课 ¥800–2000/人」；
+    短视频代运营取自「自媒体包月 15 条 ¥800–2000」「实体店包月 ¥2000–4000」「单条数字人宣传片 ¥200–500」；
+    海外 AI 视频取自 creator rate card「30s 单条 $150–3500+」「包月 $1500–20000+」；
+    AI 绘画取自「电商主图 ¥100–500/张、批量 80 起」「店铺整套视觉 ¥899–1599」「IP 全套 ¥1000–3000」。
+    行情会变，接单前请以实际询价为准——本文数字只作锚点。
+    <br>数据存于本机 localStorage。换设备用「导出 / 导入」搬家。<span id="stamp"></span>
+  </footer>
+</main>
+
+<!-- modal -->
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 数据层 ============ */
+const KEY='abu_vault_v1';
+const TC={内容创作:'#ff4d17',AI工程:'#2b52a8',设计:'#5b32b8',技术:'#0a7a44',知识付费:'#f01e2b',管理:'#c2410c',运营:'#0f766e'};
+const CATC=['内容创作','AI工程','设计','技术','知识付费','管理','运营'];
+const TIERN={1:['卖时间','t1'],2:['卖产品','t2'],3:['卖认知','t3']};
+
+const SEED_SKILLS=[
+{id:'s1',name:'AI 视频生成',cat:'内容创作',tier:1,level:5,tc:TC['内容创作'],
+ use:['短剧 / 漫剧分镜成片，一条片子从脚本到出片','商品图生视频广告，主图 + 15s 短片','角色一致性短片，OC 出镜内容','数字人口播，企业宣传不露脸'],
+ money:[{m:'短视频包月代运营（20 条 + 图文）',p:'¥2000–4000/月'},{m:'单条数字人宣传片',p:'¥200–500/条'},{m:'品牌 / 产品短片',p:'¥5000–15000/条'},{m:'海外接单（30s 单条）',p:'$150–3500/条'}],
+ income:'¥0.8–1.5w/月（3–4 个包月客户）',demand:'高',effort:'低',
+ next:'把 3 个作品剪成 30 秒案例合集，发朋友圈 + 小红书。这是接单唯一的入场券。'},
+
+{id:'s2',name:'视频模型评测 / GSB 标注',cat:'AI工程',tier:3,level:5,tc:TC['AI工程'],
+ use:['生成模型横评，逐帧核对切镜 / 机位 / 打光','评测集构建与 rubric 设计','给模型厂商做第三方 benchmark','标注团队的质量验收标准'],
+ money:[{m:'模型评测外包（按轮）',p:'¥3000–8000/轮'},{m:'评测集 / rubric 搭建',p:'¥1–2w/套'},{m:'标注规范制定 + 验收',p:'¥5000–1.5w'}],
+ income:'¥0.5–2w/月（项目制，不稳定但单价高）',demand:'中高',effort:'中',
+ next:'把评测 rubric 压成一页 PDF 当报价单。这是极少数「会的人不多、单价不讲价」的能力，别藏着。'},
+
+{id:'s3',name:'视频 Caption / 多模态数据构建',cat:'AI工程',tier:3,level:5,tc:TC['AI工程'],
+ use:['视频 / 图片数据的精细化标注规范','训练数据质量把控与抽检','数据集搭建流程 SOP 化','跨模态一致性校验'],
+ money:[{m:'数据集构建外包',p:'¥3–15/条（按难度）'},{m:'标注 SOP 与规范咨询',p:'¥8000–2w'},{m:'数据团队带教',p:'¥1–3w/月'}],
+ income:'¥1–2w/月',demand:'中高',effort:'中',
+ next:'你带 20+ 人团队，这是「管理 + 标注」双buff。把它做成课程，学员单价能翻 3 倍。'},
+
+{id:'s4',name:'剪辑与节奏',cat:'内容创作',tier:1,level:3,tc:TC['内容创作'],
+ use:['成片节奏、转场、卡点','系列化内容的统一片头模板','把 AI 素材剪成能看的片子'],
+ money:[{m:'附加在 AI 视频单上的溢价',p:'单条 +15–30%'}],
+ income:'不单独计价，作用于 s1 的单条溢价',demand:'高',effort:'低',
+ next:'Tim 的剪辑课还剩多少？看完立刻用在 s1 上，这是最便宜的一次提价。',linkTo:'s1'},
+
+{id:'s5',name:'AI 绘画 / 电商视觉',cat:'设计',tier:1,level:4,tc:TC['设计'],
+ use:['电商主图 / 详情页配图','店铺整套视觉（主图+详情+活动海报）','活动宣传海报与新媒体配图','IP 形象 / 品牌全套视觉'],
+ money:[{m:'电商主图 / 详情配图',p:'¥100–500/张（批量 80 起）'},{m:'店铺整套视觉',p:'¥899–1599/套'},{m:'IP 形象全套',p:'¥1000–3000/套'},{m:'活动海报三张套',p:'¥169–269/套'}],
+ income:'¥0.5–1.2w/月（3 单/天 × ¥150 × 22 天 ≈ ¥9900）',demand:'高',effort:'低',
+ next:'定 3 档报价（引流 / 常规 / 高端）贴进私域。别再一事一议，报价不透明永远被压价。'},
+
+{id:'s6',name:'OC 角色设定',cat:'设计',tier:2,level:4,tc:TC['设计'],
+ use:['角色设定集 / 立绘 / 表情差分','IP 从 0 到 1 的视觉体系','内容账号的固定主角'],
+ money:[{m:'角色设定委托',p:'¥500–2000/套'},{m:'IP 全套视觉（接 s5）',p:'¥1000–3000/套'},{m:'素材包售卖（平台自动发货）',p:'¥49–99/份'}],
+ income:'¥0.3–0.8w/月',demand:'中',effort:'低',
+ next:'这是唯一「一次做多次卖」的类型。把常用设定拆成素材包挂平台，睡后收入。'},
+
+{id:'s7',name:'单文件前端 / 落地页',cat:'技术',tier:1,level:5,tc:TC['技术'],
+ use:['Stripe 风格落地页，独立站转化页','个人作品集 / 数据仪表盘','营销页、活动页、发布页','单文件 HTML 交付，零依赖可直接跑'],
+ money:[{m:'落地页 / 独立站',p:'¥3000–15000/单（海外 $500–5000）'},{m:'作品集站',p:'¥2000–8000/单'},{m:'小型交互工具 / 仪表盘',p:'¥3000–8000'}],
+ income:'¥0.8–2w/单，每月 1 单就够',demand:'中高',effort:'中',
+ next:'你的 v31 作品集就是最好的案例页。把它做成模板化交付，接单周期能从一周压到两天。'},
+
+{id:'s8',name:'企业 AI 内训 / 培训',cat:'知识付费',tier:3,level:4,tc:TC['知识付费'],
+ use:['AIGC 内容创作实战课（面向市场 / 新媒体）','管理者 AI 思维与战略','定制到客户真实业务场景'],
+ money:[{m:'AIGC 实战内训 2 天',p:'¥2.5–3.5w/天'},{m:'管理者 AI 战略 1 天',p:'¥2.0–4.0w/天'},{m:'公开课（个人）',p:'¥1800–2800/人'},{m:'线上认证课',p:'¥800–2000/人'}],
+ income:'¥1.8–4w/场，一年 6 场顶一年接单',demand:'高',effort:'高',
+ next:'最缺的不是课程内容，是 3 个可公开的客户案例记录。下一场内训起，全程录像剪成案例。'},
+
+{id:'s9',name:'团队管理 / SOP 流程建设',cat:'管理',tier:3,level:5,tc:TC['管理'],
+ use:['20+ 人团队的流程与验收标准','AI 内容流水线的 SOP 落地','跨部门协作机制设计'],
+ money:[{m:'AI 团队搭建咨询',p:'¥2–5w/项目'},{m:'SOP 手册 / 流程陪跑',p:'¥1–3w/项目'},{m:'管理者 1v1 长期陪跑',p:'¥3000–8000/月'}],
+ income:'¥2–5w/项目',demand:'中高',effort:'中',
+ next:'内训市场已经从「教工具」转向「要 SOP 可验收」。你的管理经验正好是这个缺口。'},
+
+{id:'s10',name:'提示词工程 / Agent 工作流编排',cat:'技术',tier:2,level:4,tc:TC['技术'],
+ use:['提示词库与工作流模板','Agent / 自动化流程搭建','团队内部工具与 SOP 自动化','Skill / 插件化封装'],
+ money:[{m:'提示词库 / 工作流模板',p:'¥49–199/份'},{m:'企业提示词体系咨询',p:'¥8000–2w'},{m:'定制工作流搭建',p:'¥1–3w'}],
+ income:'¥0.2–0.6w/月（前期以咨询为主，模板是长尾）',demand:'中高',effort:'低',
+ next:'你现在用的这套 Skill 体系本身就是产品。脱敏后打包成模板，是最快的一次被动收入尝试。'},
+
+{id:'s11',name:'AI 情报 / 选题策划',cat:'运营',tier:2,level:4,tc:TC['运营'],
+ use:['每日扫推特 / YouTube 出选题','行业动态与新模型跟踪','把情报转成内容或课程','给团队做技术选型参考'],
+ money:[{m:'AI 领域内容账号（涨粉→广告 / 社群）',p:'广告 ¥2000–8000/月'},{m:'行业情报周报（订阅制）',p:'¥99–299/季'}],
+ income:'¥0.2–1w/月（长尾，起量慢但复利）',demand:'中',effort:'低',
+ next:'你每天刷的那些 AI 消息，本来就是内容。开个号记录，坚持 90 天看数据。'},
+
+{id:'s12',name:'AIGC 教学 / 课程产品化',cat:'知识付费',tier:2,level:3,tc:TC['知识付费'],
+ use:['录播课 / 训练营 / 社群','把内训内容复用成标准化产品','学员作业反馈反哺课程'],
+ money:[{m:'录播课',p:'¥199–599/份'},{m:'训练营',p:'¥1999–4999/人'},{m:'社群订阅',p:'¥299–999/年'}],
+ income:'¥0.5–3w/期',demand:'中高',effort:'中',
+ next:'先别录课。把内训里学员问最多的问题列出来，那 20 个问题就是你的课程大纲。'},
+
+{id:'s13',name:'模型微调 / LoRA 定制',cat:'技术',tier:1,level:3,tc:TC['技术'],
+ use:['角色 / 风格 / 品牌专用模型','少量样本就能出稳定效果','配合 AI 视频做风格统一'],
+ money:[{m:'角色 LoRA 训练',p:'¥800–2000/个'},{m:'品牌 / 风格定制',p:'¥1–3w'}],
+ income:'¥0.5–1w/月',demand:'中',effort:'中',
+ next:'和 s6 打包卖：「角色设定 + 可复用模型」，客单价能到 ¥3000+。'}
+];
+
+const SEED_ACTS=[
+{n:'看 Tim 剪辑课一节',cat:'学习',e:'中',sc:'家',t:'1h',earn:'看完立刻用在 s1，一条片能多卖 15–30%'},
+{n:'看 AI 视频课一节',cat:'学习',e:'中',sc:'家',t:'1h',earn:'提升产能，同样的时间多交 1–2 条'},
+{n:'拆一个 YouTube 上的 AI 视频',cat:'信息',e:'低',sc:'家',t:'30m',earn:'收集可复用的镜头语言，进 s1 素材库'},
+{n:'去书店翻一小时书',cat:'信息',e:'低',sc:'外出',t:'1h',earn:''},
+{n:'读 30 页书',cat:'学习',e:'低',sc:'家',t:'30m',earn:''},
+{n:'刷推特 AI 消息 30 分钟',cat:'信息',e:'低',sc:'家',t:'15m',earn:'顺手存 3 条选题进 s11'},
+{n:'看 YouTube 记录视频',cat:'信息',e:'低',sc:'家',t:'30m',earn:''},
+{n:'听一集 AI 播客',cat:'信息',e:'低',sc:'外出',t:'30m',earn:''},
+{n:'做一张 AI 图',cat:'创作',e:'低',sc:'家',t:'15m',earn:'存进作品集，也是接单案例'},
+{n:'做一段 15s AI 短片',cat:'创作',e:'中',sc:'家',t:'1h',earn:'s1 的直接产出，一条能报 ¥200–500'},
+{n:'画一张 OC 设定稿',cat:'创作',e:'中',sc:'家',t:'1h',earn:'s6 的产出，素材包的原料'},
+{n:'写一条小红书 / 公众号',cat:'创作',e:'中',sc:'家',t:'30m',earn:'s11 账号的日常更新'},
+{n:'给作品集加一个新项目',cat:'创作',e:'中',sc:'家',t:'1h',earn:'s7 的报价物，涨价的底气'},
+{n:'给团队写一份流程 SOP',cat:'整理',e:'中',sc:'公司',t:'1h',earn:'s9 的可交付物，能直接报价'},
+{n:'打乒乓球',cat:'运动',e:'高',sc:'外出',t:'1h',earn:''},
+{n:'打羽毛球',cat:'运动',e:'高',sc:'外出',t:'1h',earn:''},
+{n:'室内拉伸 15 分钟',cat:'运动',e:'低',sc:'家',t:'15m',earn:''},
+{n:'跳绳 / HIIT 20 分钟',cat:'运动',e:'中',sc:'家',t:'20m',earn:''},
+{n:'出门散步 30 分钟',cat:'运动',e:'低',sc:'外出',t:'30m',earn:''},
+{n:'泡一杯茶，坐 20 分钟',cat:'休息',e:'低',sc:'家',t:'20m',earn:''},
+{n:'闭眼躺 15 分钟',cat:'休息',e:'低',sc:'家',t:'15m',earn:''},
+{n:'发呆 10 分钟不看屏幕',cat:'休息',e:'低',sc:'家',t:'10m',earn:''},
+{n:'约人喝茶 / 吃饭',cat:'社交',e:'中',sc:'外出',t:'2h',earn:''},
+{n:'找同事 1v1 聊 30 分钟',cat:'社交',e:'中',sc:'公司',t:'30m',earn:'s9 团队带教的日常输入'},
+{n:'打一次电话给爸妈',cat:'社交',e:'低',sc:'外出',t:'30m',earn:''},
+{n:'整理素材库',cat:'整理',e:'中',sc:'家',t:'30m',earn:'s1 的资产，越整越值钱'},
+{n:'复盘本周（写 5 行）',cat:'整理',e:'中',sc:'家',t:'15m',earn:''},
+{n:'更新技能库状态',cat:'整理',e:'低',sc:'家',t:'15m',earn:'让这个库一直准，别三个月后失真'},
+{n:'清理收藏夹 / 稍后读',cat:'整理',e:'低',sc:'家',t:'15m',earn:''}
+];
+const ACTC={学习:'#ff4d17',信息:'#2b52a8',创作:'#5b32b8',运动:'#0a7a44',休息:'#0f766e',社交:'#c2410c',整理:'#968b83'};
+
+const SEED_LEARN=[
+{id:'l1',icon:'✂️',name:'Tim 的剪辑课',who:'未完成 · 卡在成片质量',pct:35,
+ why:'<b>为什么必须看完：</b>AI 生成的素材再好，不会剪也是废片。剪辑直接决定你在 s1 上敢报 ¥500 还是 ¥2000，单条差 3–4 倍。这是你投入产出比最高的一门课。',
+ next:'今天只看 1 节，看完把学到的手法用在你最新的那条 AI 短片上。'},
+{id:'l2',icon:'🎬',name:'AI 视频课',who:'未完成 · 卡在产能',pct:20,
+ why:'<b>为什么必须看完：</b>工具迭代太快，靠自己摸索永远慢半拍。学完能一次解决「同一角色不同镜头不一致」「运镜控制不住」这两个最卡的交付问题，直接缩短每条片子的工时。',
+ next:'挑一个你做过的项目重做一遍，用新课学到的方法，对比差异。'}
+];
+
+/* ============ 状态 ============ */
+let S=load();
+function load(){
+  try{const r=JSON.parse(localStorage.getItem(KEY));
+    if(r&&r.sk)return r;
+  }catch(e){}
+  return {sk:SEED_SKILLS.map(x=>({...x})),acts:SEED_ACTS.map(x=>({...x})),
+    learn:SEED_LEARN.map(x=>({...x})),inc:[],catF:'全部',fE:'',fS:'',fA:'',cat:'',done:{}};
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+
+/* ============ 工具 ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function money(n){return '¥'+Math.round(n).toLocaleString('zh-CN')}
+
+/* ============ Tabs ============ */
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.setAttribute('aria-selected','false'));
+  t.setAttribute('aria-selected','true');
+  $$('.panel').forEach(p=>p.classList.remove('on'));
+  $('#'+t.dataset.p).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ============ 1. 技能库 ============ */
+function renderCatF(){
+  $('#catF').innerHTML=['全部',...CATC].map(c=>
+    `<button class="chip sm" data-c="${c}" aria-pressed="${S.catF===c}">${c}</button>`).join('');
+  $$('#catF .chip').forEach(b=>b.onclick=()=>{S.catF=b.dataset.c;save();renderCatF();renderSkills()});
+}
+function stars(n){return `<span class="stars" title="熟练度 ${n}/5">${Array.from({length:5},(_,i)=>`<i class="${i<n?'f':''}"></i>`).join('')}</span>`}
+function renderSkills(){
+  const q=($('#q').value||'').toLowerCase().trim();
+  let list=S.sk.filter(s=>
+    (S.catF==='全部'||s.cat===S.catF)&&
+    (!q||(s.name+s.cat+s.use.join('')+s.money.map(m=>m.m+m.p).join('')).toLowerCase().includes(q))
+  );
+  list.sort((a,b)=>a.tier-b.tier||b.level-a.level);
+  $('#skGrid').innerHTML=list.length?list.map(s=>`
+  <article class="card" style="--tc:${s.tc}">
+    <div class="ch">
+      <div class="ct">
+        <h3>${esc(s.name)}</h3>
+        <div class="meta">
+          <span class="tag">${esc(s.cat)}</span>
+          <span class="tag ${TIERN[s.tier][1]}">${TIERN[s.tier][0]}</span>
+          <span class="tag">需求${esc(s.demand)}</span>
+          <span class="tag">上手${esc(s.effort)}</span>
+        </div>
+      </div>${stars(s.level)}
+    </div>
+    <div class="blk"><h4>怎么用</h4><ul class="u">${s.use.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
+    <div class="blk"><h4>变现路径 · 市场参考价</h4><div class="money">${s.money.map(m=>`<div class="mrow"><span class="m">${esc(m.m)}</span><span class="p">${esc(m.p)}</span></div>`).join('')}</div></div>
+    <div class="blk"><h4>收益预估</h4><div class="inc">${esc(s.income)}</div></div>
+    <div class="nextbox"><b>下一步 →</b> ${esc(s.next)}</div>
+    <div class="foot">
+      <button class="btn d" data-edit="${s.id}">编辑</button>
+      ${s.linkTo?`<button class="btn d" data-goto="${s.linkTo}">关联技能</button>`:''}
+      <button class="btn d" data-del="${s.id}" style="margin-left:auto;color:#b23">删除</button>
+    </div>
+  </article>`).join(''):`<div class="empty" style="grid-column:1/-1">没有匹配的技能。换关键词，或者点右上角加一项。</div>`;
+  $$('[data-edit]').forEach(b=>b.onclick=()=>openSk(b.dataset.edit));
+  $$('[data-del]').forEach(b=>b.onclick=()=>{
+    if(confirm('删掉「'+S.sk.find(x=>x.id===b.dataset.del).name+'」？')){
+      S.sk=S.sk.filter(x=>x.id!==b.dataset.del);save();renderSkills();renderStats();
+    }
+  });
+  $$('[data-goto]').forEach(b=>b.onclick=()=>openSk(b.dataset.goto));
+}
+$('#q').oninput=renderSkills;
+$('#addSk').onclick=()=>openSk(null);
+
+/* ============ 2. 计算器 ============ */
+function calc(){
+  const p=+$('#c1').value||0,h=+$('#c2').value||0,av=+$('#c3').value||0,tg=+$('#c4').value||0,fx=+$('#c5').value||0;
+  const per=h>0?p/h:0;
+  const cap=per>0?(av*per):0;
+  const net=cap-fx;
+  const need=net>0?Math.ceil(tg/net):0;
+  const effH=need>0?need*h:0;
+  $('#cOut').innerHTML=`
+    <div class="big">${money(net)}<small>每月净收入（扣工具）</small></div>
+    <div class="det">
+      时薪 <b>${money(per)}</b>　·　${av}h 上限产出 <b>${money(cap)}</b>　·　每单毛利 <b>${money(p-fx/Math.max(1,av/h||1))}</b><br>
+      要到 ${money(tg)}/月：接 <b>${need}</b> 单，约 <b>${effH.toFixed(1)}</b> 小时/月
+      ${effH>av?'<br><b style="color:#FFD9A0">⚠ 超过你填的可用小时了——要么提价，要么走「卖产品」路线</b>':''}
+    </div>`;
+}
+['c1','c2','c3','c4','c5'].forEach(i=>$('#'+i).oninput=calc);
+
+/* ============ 3. 状态补给 ============ */
+let cur=null;
+function chips(sel,key,after){
+  $$('#'+sel+' .chip').forEach(b=>b.onclick=()=>{
+    $$('#'+sel+' .chip').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');S[key]=b.dataset.v;save();after&&after();
+  });
+}
+chips('fEnergy','fE',renderPool);chips('fScene','fS',renderPool);chips('fCat','fA',renderPool);
+$('#roll').onclick=()=>{
+  const list=poolList();if(!list.length)return toast('这个组合下没动作了，放宽一个筛选');
+  cur=list[Math.floor(Math.random()*list.length)];
+  const others=list.filter(x=>x.n!==cur.n).sort(()=>Math.random()-.5).slice(0,2);
+  $('#rollBox').innerHTML=`
+    <div class="act spin" style="--ac:${ACTC[cur.cat]}">
+      <div class="ck">✓</div>
+      <h4>${esc(cur.n)}</h4>
+      <div class="why">${cur.t} · ${cur.cat} · 精力${cur.e} · ${cur.sc}</div>
+      ${cur.earn?`<div class="earn"><span>${esc(cur.earn)}</span></div>`:''}
+    </div>
+    <div class="alts"><p>实在不想干这个</p><div>${others.map(o=>`<span>${esc(o.n)}</span>`).join('')}</div></div>`;
+  $('#rollBox').style.justifyContent='flex-start';
+};
+$('#ckDone').onclick=()=>{
+  if(!cur)return toast('先抽一个动作');
+  S.done[today()]=(S.done[today()]||[]);if(!S.done[today()].includes(cur.n))S.done[today()].push(cur.n);
+  save();renderPool();renderStreak();toast('打卡 ✓ '+cur.n);
+};
+function poolList(){
+  return S.acts.filter(a=>(!S.fE||a.e===S.fE)&&(!S.fS||a.sc===S.fS)&&(!S.fA||a.cat===S.fA));
+}
+function renderPool(){
+  const list=poolList(),t=today(),dn=S.done[t]||[];
+  $('#pool').innerHTML=list.length?list.map(a=>`
+    <div class="ai${dn.includes(a.n)?' done':''}" style="--ac:${ACTC[a.cat]}" data-n="${esc(a.n)}">
+      <div class="ck">✓</div>
+      <div class="n">${esc(a.n)}</div>
+      <div class="m"><i>${a.cat}</i><i>${a.t}</i><i>${a.sc}</i><i>精力${a.e}</i></div>
+    </div>`).join(''):`<div class="empty" style="grid-column:1/-1">没有匹配的动作。换个状态试试。</div>`;
+  $$('#pool .ai').forEach(el=>el.onclick=()=>{
+    const n=el.dataset.n;
+    S.done[today()]=S.done[today()]||[];
+    const i=S.done[today()].indexOf(n);
+    i>=0?S.done[today()].splice(i,1):S.done[today()].push(n);
+    save();renderPool();renderStreak();
+  });
+}
+function renderStreak(){
+  // 连续天数：今天没打卡不算断，从昨天开始往回数
+  let st=0;
+  for(let i=0;i<3650;i++){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const has=(S.done[k(d)]||[]).length>0;
+    if(has) st++;
+    else if(i===0) continue;   // 今天还没打卡，不中断连击
+    else break;
+  }
+  $('#stk').textContent=st;
+  const t=today();let h='';
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=k(d);
+    const on=(S.done[ds]||[]).length>0;
+    h+=`<div class="day${on?' on':''}${ds===t?' today':''}" title="${ds}">${d.getDate()}</div>`}
+  $('#streak').innerHTML=h;
+}
+function k(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+/* ============ 4. 学习队列 ============ */
+function renderLearn(){
+  $('#learnGrid').innerHTML=S.learn.map(l=>`
+  <div class="lc">
+    <div class="top">
+      <div class="icon">${l.icon}</div>
+      <div style="flex:1"><h3>${esc(l.name)}</h3><div class="who">${esc(l.who)}</div></div>
+    </div>
+    <div class="bar"><i style="width:${l.pct}%"></i></div>
+    <div class="pct"><span>进度</span><span><b style="color:var(--b2)">${l.pct}%</b>${l.pct>=100?'✓ 毕业':''}</span></div>
+    <div class="why">${l.why}</div>
+    <div class="nextbox"><b>今天这一步 →</b> ${esc(l.next)}</div>
+    <div class="foot">
+      <button class="btn d" data-p="${l.id}" data-v="-10">−10%</button>
+      <button class="btn d" data-p="${l.id}" data-v="10">+10%</button>
+      <button class="btn d" data-p="${l.id}" data-v="25">+25%</button>
+      <button class="btn d" data-del="${l.id}" style="margin-left:auto;color:#b23">删除</button>
+    </div>
+  </div>`).join('');
+  $$('#learnGrid [data-p]').forEach(b=>b.onclick=()=>{
+    const l=S.learn.find(x=>x.id===b.dataset.p);
+    l.pct=Math.max(0,Math.min(100,l.pct+ +b.dataset.v));
+    l.who=l.pct>=100?'已完成 · 技能库可以加一条':(l.pct>50?'过半 · 开始用在作品上':'未完成 · 别再拖');
+    save();renderLearn();toast(l.pct>=100?'这门课毕业了，把它加进技能库':`${l.name} → ${l.pct}%`);
+  });
+  $$('#learnGrid [data-del]').forEach(b=>b.onclick=()=>{
+    if(confirm('删掉？')){S.learn=S.learn.filter(x=>x.id!==b.dataset.del);save();renderLearn()}});
+}
+$('#addLearn').onclick=()=>{
+  const n=prompt('课程名称');if(!n)return;
+  S.learn.push({id:'l'+Date.now(),icon:'📘',name:n,who:'未开始',pct:0,
+    why:'<b>为什么学：</b>（自己写一条，写不出来说明还没想清楚为什么要学）',
+    next:'今天看 10 分钟。'});
+  save();renderLearn();
+};
+
+/* ============ 5. 收益追踪 ============ */
+function renderInc(){
+  const now=new Date(),mo=[],lb=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    mo.push(S.inc.filter(x=>x.m===k).reduce((a,b)=>a+b.v,0));lb.push((d.getMonth()+1)+'月')}
+  const mx=Math.max(...mo,1);
+  $('#bars').innerHTML=mo.map((v,i)=>`<div class="b${v?'':' zero'}">
+      <span>${v?money(v):'—'}</span>
+      <div class="bar" style="height:${Math.max(4,v/mx*100)}%"></div></div>`).join('');
+  $('#xlab').innerHTML=lb.map(x=>`<span>${x}</span>`).join('');
+  const tot=S.inc.reduce((a,b)=>a+b.v,0);
+  $('#incSum').textContent='合计 '+money(tot);
+  const g={};S.inc.forEach(x=>g[x.what]=(g[x.what]||0)+x.v);
+  const top=Object.entries(g).sort((a,b)=>b[1]-a[1]);
+  $('#incList').innerHTML=top.length?top.map(([w,v])=>{
+    const hit=CATC.filter(c=>w.includes(c))[0];
+    return `<div class="card" style="--tc:${TC[hit]||TC['内容创作']}">
+      <div class="ch"><div class="ct"><h3 style="font-size:15px">${esc(w)}</h3>
+      <div class="inc">${money(v)}</div>${hit?`<div class="meta"><span class="tag">${hit}</span></div>`:''}</div></div>
+    </div>`;}).join(''):`<div class="empty" style="grid-column:1/-1">还没有记录。接到第一单就记下来——不然三个月后你不知道哪条路真的能走。</div>`;
+}
+$('#addInc').onclick=()=>{
+  const d=new Date();
+  const dflt=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const w=prompt('这笔钱来自哪项技能？（写 s1 或 AI 视频 这种）');if(!w)return;
+  const v=prompt('金额（元）');if(!v)return;
+  const m=prompt('归属月份（'+dflt+' 格式 YYYY-MM）',dflt);if(!m)return;
+  S.inc.push({what:w,v:+v||0,m});
+  S.inc.sort((a,b)=>a.m<b.m?1:-1);
+  save();renderInc();toast('记下了 ✓');
+};
+
+/* ============ 统计 ============ */
+function renderStats(){
+  const t1=S.sk.filter(s=>s.tier===1).length,t2=S.sk.filter(s=>s.tier===2).length,t3=S.sk.filter(s=>s.tier===3).length;
+  const st=Object.keys(S.done).filter(k=>S.done[k].length).length;
+  const inc=S.inc.reduce((a,b)=>a+b.v,0);
+  $('#stats').innerHTML=`
+    <div class="stat hi"><b>${S.sk.length}</b><span>项技能</span></div>
+    <div class="stat"><b>${t1}/${t2}/${t3}</b><span>卖时间/产品/认知</span></div>
+    <div class="stat"><b>${S.acts.length}</b><span>个补给动作</span></div>
+    <div class="stat"><b>${st}</b><span>天有记录</span></div>
+    <div class="stat"><b>${inc?money(inc):'—'}</b><span>已记录收入</span></div>`;
+  $('#stamp').textContent=' 最后更新：'+new Date().toLocaleString('zh-CN');
+}
+
+/* ============ 导出 / 导入 / 跨设备同步 ============ */
+// 跨设备方案：把数据快照编码进 URL hash。在电脑改完→复制链接→手机打开→自动合并。
+// 之所以不用服务器：这是纯静态页，加后端就破坏「单文件、随处可跑」的前提。
+// URL 长度上限约 8万字符，13 项技能足够用。
+const B64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+function enc(obj){
+  const s=JSON.stringify(obj),b=new TextEncoder().encode(s);
+  let bin='';for(let i=0;i<b.length;i++)bin+=String.fromCharCode(b[i]);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function dec(str){
+  try{
+    let b=str.replace(/-/g,'+').replace(/_/g,'/');
+    while(b.length%4)b+='=';
+    const bin=atob(b),u=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    return JSON.parse(new TextDecoder().decode(u));
+  }catch(e){return null}
+}
+function shareLink(){
+  const hash=enc(S);
+  const url=location.origin+location.pathname+'#d='+hash;
+  if(url.length>75000)return toast('数据太大，链接装不下了，用「导出文件」');
+  if(navigator.share)return navigator.share({title:'技能库快照',url}).catch(()=>copy(url));
+  copy(url);
+}
+function copy(url){
+  navigator.clipboard?.writeText(url)
+    .then(()=>toast('链接已复制，粘贴到手机打开即可同步'))
+    .catch(()=>{prompt('复制这个链接到手机打开：',url)});
+}
+function importHash(){
+  const h=location.hash;
+  if(!h.startsWith('#d='))return;
+  const d=dec(h.slice(3));
+  if(!d||!d.sk){toast('链接里的数据读不出来');return}
+  if(confirm('要把链接里的数据导入吗？会覆盖当前这台设备的数据。')){
+    S={sk:d.sk,acts:d.acts||SEED_ACTS,learn:d.learn||SEED_LEARN,inc:d.inc||[],catF:'全部',fE:'',fS:'',fA:'',done:d.done||{}};
+    save();init();history.replaceState(null,'',location.pathname);toast('已从链接同步 ✓');
+  }
+}
+function io(){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:250;display:flex;gap:8px;background:rgba(255,255,255,.97);border:1px solid var(--line2);padding:8px 12px;border-radius:11px;box-shadow:var(--hard2);font-size:13px;align-items:center;flex-wrap:wrap;max-width:94vw;justify-content:center;backdrop-filter:blur(8px)';
+  bar.innerHTML=`<span style="color:var(--ink3)">数据</span>
+    <button class="btn" id="sync">📱 同步到手机</button>
+    <button class="btn" id="exp">导出文件</button>
+    <button class="btn" id="imp">导入</button>
+    <button class="btn d" id="hide" style="padding:6px 10px">✕</button>
+    <input type="file" id="impf" accept="application/json,.json" style="display:none">`;
+  document.body.appendChild(bar);
+  bar.querySelector('#hide').onclick=()=>bar.remove();
+  bar.querySelector('#sync').onclick=shareLink;
+  bar.querySelector('#exp').onclick=()=>{
+    const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download='skill-vault-'+today()+'.json';a.click();toast('已导出');
+  };
+  const f=bar.querySelector('#impf');
+  bar.querySelector('#imp').onclick=()=>f.click();
+  f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();
+    r.onload=()=>{try{const d=JSON.parse(r.result);
+      if(!d.sk)throw 0;
+      if(!confirm('导入会覆盖当前设备的数据，继续？'))return;
+      S={...S,...d,catF:'全部',fE:'',fS:'',fA:''};save();init();toast('导入成功 ✓');
+    }catch(e){toast('文件读不了')}};
+    r.readAsText(file)};
+  setTimeout(()=>bar.remove(),20000);
+}
+
+/* ============ 弹窗 ============ */
+const mask=$('#mask'),modal=$('#modal');
+function openSk(id){
+  const s=id?S.sk.find(x=>x.id===id):null;
+  const d=s||{id:'',name:'',cat:'内容创作',tier:1,level:3,use:['',''],money:[{m:'',p:''}],income:'',demand:'高',effort:'中',next:''};
+  modal.innerHTML=`
+  <div class="mh"><h3>${s?'编辑技能':'新技能'}</h3><button class="x" id="cx">✕</button></div>
+  <div class="mb">
+    <div class="row2">
+      <div><label class="lbl">技能名</label><input id="f_name" value="${esc(d.name)}" placeholder="例如：AI 视频生成"></div>
+      <div><label class="lbl">分类</label><select id="f_cat">${CATC.map(c=>`<option ${c===d.cat?'selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+    <div class="row2">
+      <div><label class="lbl">变现路线</label><select id="f_tier">${[1,2,3].map(t=>`<option value="${t}" ${t===d.tier?'selected':''}>${TIERN[t][0]}</option>`).join('')}</select></div>
+      <div><label class="lbl">熟练度 <span id="lv">${d.level}</span>/5</label><input id="f_lv" type="range" min="1" max="5" value="${d.level}" style="padding:0;border:0"></div>
+    </div>
+    <div><label class="lbl">怎么用（一行一条）</label><textarea id="f_use" rows="4">${esc(d.use.join('\n'))}</textarea></div>
+    <div><label class="lbl">变现路径 · 格式「模式 | 价格」，一行一条</label><textarea id="f_money" rows="4" placeholder="短视频包月代运营 | ¥2000–4000/月">${esc(d.money.map(m=>m.m+' | '+m.p).join('\n'))}</textarea></div>
+    <div><label class="lbl">收益预估</label><input id="f_inc" value="${esc(d.income)}" placeholder="¥0.8–1.5w/月"></div>
+    <div class="row2">
+      <div><label class="lbl">市场需求</label><select id="f_dem"><option ${d.demand==='高'?'selected':''}>高</option><option ${d.demand==='中高'?'selected':''}>中高</option><option ${d.demand==='中'?'selected':''}>中</option><option ${d.demand==='低'?'selected':''}>低</option></select></div>
+      <div><label class="lbl">上手难度</label><select id="f_ef"><option ${d.effort==='低'?'selected':''}>低</option><option ${d.effort==='中'?'selected':''}>中</option><option ${d.effort==='高'?'selected':''}>高</option></select></div>
+    </div>
+    <div><label class="lbl">下一步具体动作</label><textarea id="f_next" rows="2">${esc(d.next)}</textarea></div>
+  </div>
+  <div class="mf"><button class="btn" id="cn">取消</button><button class="btn p" id="ok">保存</button></div>`;
+  mask.classList.add('on');
+  const lv=$('#f_lv');lv.oninput=()=>$('#lv').textContent=lv.value;
+  $('#cx').onclick=$('#cn').onclick=()=>mask.classList.remove('on');
+  $('#ok').onclick=()=>{
+    const name=$('#f_name').value.trim();if(!name)return toast('给技能起个名');
+    const o={id:d.id||'s'+Date.now(),name,cat:$('#f_cat').value,tier:+$('#f_tier').value,
+      level:+$('#f_lv').value,tc:TC[$('#f_cat').value],
+      use:$('#f_use').value.split('\n').map(x=>x.trim()).filter(Boolean),
+      money:$('#f_money').value.split('\n').map(x=>x.trim()).filter(Boolean).map(l=>{
+        const i=l.indexOf('|');return i<0?{m:l,p:''}:{m:l.slice(0,i).trim(),p:l.slice(i+1).trim()}}),
+      income:$('#f_inc').value.trim(),demand:$('#f_dem').value,effort:$('#f_ef').value,
+      next:$('#f_next').value.trim()};
+    const i=S.sk.findIndex(x=>x.id===o.id);i<0?S.sk.push(o):S.sk[i]=o;
+    save();mask.classList.remove('on');renderSkills();renderStats();toast('保存 ✓ '+name);
+  };
+}
+mask.onclick=e=>{if(e.target===mask)mask.classList.remove('on')};
+document.onkeydown=e=>{if(e.key==='Escape')mask.classList.remove('on')};
+
+/* ============ 启动 ============ */
+function init(){
+  $$('#fEnergy .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.fE)));
+  $$('#fScene .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.fS)));
+  $$('#fCat .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===S.fA)));
+  renderCatF();renderSkills();calc();renderPool();renderStreak();renderLearn();renderInc();renderStats();
+}
+init();io();importHash();
+// 离线可用：手机加到主屏后，没网也能打开
+if('serviceWorker' in navigator&&location.protocol!=='file:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

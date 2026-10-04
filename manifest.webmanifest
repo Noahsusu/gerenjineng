@@ -1,0 +1,32 @@
+{
+  "name": "技能库 · 状态补给",
+  "short_name": "技能库",
+  "description": "个人技能变现库 + 状态补给站。知道我会什么、能卖多少钱，以及闲着的时候该干什么。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfaf8",
+  "theme_color": "#ff4d17",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
